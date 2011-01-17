@@ -8,4 +8,4 @@ function init_uploader() {
   });
 }
 
-$(document).on('ready', init_uploader())
+$(document).onReady(init_uploader)
