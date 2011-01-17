@@ -40,20 +40,19 @@ class UploadsController < ApplicationController
   # POST /uploads
   # POST /uploads.xml
   def create
-    @upload = Upload.new(params[:upload])
+      @upload = upload.new(params[:upload])
 
-    respond_to do |format|
-      if @upload.save
-        format.html { redirect_to(@upload, :notice => 'Upload was successfully created.') }
-        format.js   { render :layout => 'iframed', :action => 'show' }
-        format.xml  { render :xml => @upload, :status => :created, :location => @upload }
-      else
-        format.html { render :action => "new" }
-        format.js   { render :layout => 'iframed', :action => 'new' }
-        format.xml  { render :xml => @upload.errors, :status => :unprocessable_entity }
+      respond_to do |format|
+        if @upload.save
+          flash[:notice] = 'upload was successfully created.'
+          format.html { redirect_to(@upload) }
+          #format.js   { render rjs.insert_and_care(@upload) }
+        else
+          format.html { render :action => "new" }
+          #format.js   { render rjs.replace_form_for(@upload) }
+        end
       end
     end
-  end
 
   # PUT /uploads/1
   # PUT /uploads/1.xml

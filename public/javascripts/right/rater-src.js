@@ -361,9 +361,20 @@ $(document).onMouseover(function(event) {
     }
   }
 });
+(function() {
+        var style = document.createElement('style'),
+            rules = document.createTextNode("div.rui-rater,div.rui-rater div{margin:0;padding:0;background:none;border:none;display:inline-block; *display:inline; *zoom:1;font-family:Arial;font-size:110%}div.rui-rater{width:6em;height:1em;vertical-align:middle}div.rui-rater div{float:left;width:1em;height:1em;line-height:1em;text-align:center;cursor:pointer;color:#888}div.rui-rater div.active{color:brown;text-shadow:#666 .05em .05em .15em}div.rui-rater-disabled div{cursor:default}");
 
+        style.type = 'text/css';
 
-document.write("<style type=\"text/css\">div.rui-rater,div.rui-rater div{margin:0;padding:0;background:none;border:none;display:inline-block; *display:inline; *zoom:1;font-family:Arial;font-size:110%}div.rui-rater{width:6em;height:1em;vertical-align:middle}div.rui-rater div{float:left;width:1em;height:1em;line-height:1em;text-align:center;cursor:pointer;color:#888}div.rui-rater div.active{color:brown;text-shadow:#666 .05em .05em .15em}div.rui-rater-disabled div{cursor:default}</style>");
+        if(style.styleSheet) {
+          style.styleSheet.cssText = rules.nodeValue;
+        } else {
+          style.appendChild(rules);
+        }
+
+        document.getElementsByTagName('head')[0].appendChild(style);
+      })();
 
 return Rater;
 })(document, RightJS);

@@ -2,6 +2,8 @@ RightjsNginxUploader::Application.routes.draw do
 
   root :to => 'uploads#new'
   
+  #match '/progress' => 'uploads#create', :conditions => {:method => :post}
+  
   resources :uploads
 
   # The priority is based upon order of creation:

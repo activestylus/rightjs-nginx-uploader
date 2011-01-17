@@ -9,7 +9,7 @@ var Rte = RightJS.Rte = (function(RightJS, document, window) {
  * it creates an abstract proxy with the common functionality
  * which then we reuse and override in the actual widgets
  *
- * Copyright (C) 2010-2011 Nikolay Nemshilov
+ * Copyright (C) 2010 Nikolay Nemshilov
  */
 
 /**
@@ -49,7 +49,7 @@ function Widget(tag_name, methods) {
    *
    * Copyright (C) 2010 Nikolay Nemshilov
    */
-  var AbstractWidget = new RightJS.Class(RightJS.Element.Wrappers[tag_name] || RightJS.Element, {
+  var AbstractWidget = new RightJS.Wrapper(RightJS.Element.Wrappers[tag_name] || RightJS.Element, {
     /**
      * The common constructor
      *
@@ -81,8 +81,7 @@ function Widget(tag_name, methods) {
         options = {};
       }
       this.setOptions(options, this);
-
-      return (RightJS.Wrapper.Cache[RightJS.$uid(this._)] = this);
+      return this;
     },
 
   // protected
@@ -109,7 +108,7 @@ function Widget(tag_name, methods) {
    * Creating the actual widget class
    *
    */
-  var Klass = new RightJS.Class(AbstractWidget, methods);
+  var Klass = new RightJS.Wrapper(AbstractWidget, methods);
 
   // creating the widget related shortcuts
   RightJS.Observer.createShortcuts(Klass.prototype, Klass.EVENTS || []);

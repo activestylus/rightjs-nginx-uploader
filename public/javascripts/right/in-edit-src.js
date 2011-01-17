@@ -350,9 +350,20 @@ Element.include({
     return new InEdit(this, options).show();
   }
 });
+(function() {
+        var style = document.createElement('style'),
+            rules = document.createTextNode("div.rui-spinner,div.rui-spinner div{margin:0;padding:0;border:none;background:none;list-style:none;font-weight:normal;float:none;display:inline-block; *display:inline; *zoom:1;border-radius:.12em;-moz-border-radius:.12em;-webkit-border-radius:.12em}div.rui-spinner{text-align:center;white-space:nowrap;background:#EEE;border:1px solid #DDD;height:1.2em;padding:0 .2em}div.rui-spinner div{width:.4em;height:70%;background:#BBB;margin-left:1px}div.rui-spinner div:first-child{margin-left:0}div.rui-spinner div.glowing{background:#777}form.rui-in-edit,form.rui-in-edit .cancel{margin:0;padding:0;float:none;position:static}form.rui-in-edit{display:inline-block; *display:inline; *zoom:1;border:none;background:none}form.rui-in-edit div.rui-spinner{margin-right:.2em}form.rui-in-edit div.rui-spinner div{margin-top:.2em}form.rui-in-edit textarea.field{width:100%;margin-bottom:.5em}form.rui-in-edit .field,form.rui-in-edit .submit{margin-right:.2em}form.rui-in-edit,form.rui-in-edit .field,form.rui-in-edit .submit,form.rui-in-edit div.rui-spinner,form.rui-in-edit .cancel{vertical-align:middle}");
 
+        style.type = 'text/css';
 
-document.write("<style type=\"text/css\">div.rui-spinner,div.rui-spinner div{margin:0;padding:0;border:none;background:none;list-style:none;font-weight:normal;float:none;display:inline-block; *display:inline; *zoom:1;border-radius:.12em;-moz-border-radius:.12em;-webkit-border-radius:.12em}div.rui-spinner{text-align:center;white-space:nowrap;background:#EEE;border:1px solid #DDD;height:1.2em;padding:0 .2em}div.rui-spinner div{width:.4em;height:70%;background:#BBB;margin-left:1px}div.rui-spinner div:first-child{margin-left:0}div.rui-spinner div.glowing{background:#777}form.rui-in-edit,form.rui-in-edit .cancel{margin:0;padding:0;float:none;position:static}form.rui-in-edit{display:inline-block; *display:inline; *zoom:1;border:none;background:none}form.rui-in-edit div.rui-spinner{margin-right:.2em}form.rui-in-edit div.rui-spinner div{margin-top:.2em}form.rui-in-edit textarea.field{width:100%;margin-bottom:.5em}form.rui-in-edit .field,form.rui-in-edit .submit{margin-right:.2em}form.rui-in-edit,form.rui-in-edit .field,form.rui-in-edit .submit,form.rui-in-edit div.rui-spinner,form.rui-in-edit .cancel{vertical-align:middle}</style>");
+        if(style.styleSheet) {
+          style.styleSheet.cssText = rules.nodeValue;
+        } else {
+          style.appendChild(rules);
+        }
+
+        document.getElementsByTagName('head')[0].appendChild(style);
+      })();
 
 return InEdit;
 })(document, RightJS);

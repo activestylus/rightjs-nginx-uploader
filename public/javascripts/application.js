@@ -2,9 +2,9 @@
 // This file is automatically included by javascript_include_tag :defaults
 function init_uploader() {
   var form = $('new_upload');
-  $('upload').on('click', function() {
+  '#upload'.on('click', function() {
     form.uploader = new Uploader(form);
-    form.submit();
+    form.send();
   });
 }
 

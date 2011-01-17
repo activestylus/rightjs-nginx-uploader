@@ -20,7 +20,7 @@ var RightJS = function(value) {
   return value; // <- a dummy method to emulate the safe-mode
 };
 
-RightJS.version = "2.2.0-rc";
+RightJS.version = "2.2.0";
 RightJS.modules =["core", "dom", "form", "events", "xhr", "fx", "cookie"];
 
 
@@ -76,7 +76,7 @@ $ext = RightJS.$ext = function(dest, source, dont_overwrite) {
 $eval = RightJS.$eval = function(text) {
   if (text) {
     if ('execScript' in window) {
-      $(document).window()._.execScript(text);
+      current_Document.win()._.execScript(text);
     } else {
       $E('script', {text: text}).insertTo(HTML);
     }
@@ -220,11 +220,11 @@ $ = RightJS.$ = function(object) {
  * Finds all the elements in the document by the given css_rule
  *
  * @param String element
- * @param Object optional context
+ * @param Boolean raw search marker
  * @return Array search result
  */
-$$ = RightJS.$$ = function(css_rule, context) {
-  return $(context || document).find(css_rule);
+$$ = RightJS.$$ = function(css_rule, raw) {
+  return current_Document.find(css_rule, raw);
 },
 
 /** !#server
@@ -1124,9 +1124,9 @@ String.include({
    * @return boolean check result
    */
   startsWith: function(string, ignorecase) {
-    var start_str = this.substr(0, string.length);
-    return ignorecase ? start_str.toLowerCase() === string.toLowerCase() :
-      start_str === string;
+    return (ignorecase !== true ? this.indexOf(string) :
+      this.toLowerCase().indexOf(string.toLowerCase())
+    ) === 0;
   },
 
   /**
@@ -1137,9 +1137,10 @@ String.include({
    * @return boolean check result
    */
   endsWith: function(string, ignorecase) {
-    var end_str = this.substring(this.length - string.length);
-    return ignorecase ? end_str.toLowerCase() === string.toLowerCase() :
-      end_str === string;
+    return this.length - (
+      ignorecase !== true ? this.lastIndexOf(string) :
+        this.toLowerCase().lastIndexOf(string.toLowerCase())
+    ) === string.length;
   },
 
   /**
@@ -1148,7 +1149,7 @@ String.include({
    * @return Integer or NaN
    */
   toInt: function(base) {
-    return parseInt(this, base || 10);
+    return parseInt(this, base === undefined ? 10 : base);
   },
 
   /**
@@ -1157,7 +1158,7 @@ String.include({
    * @return Float or NaN
    */
   toFloat: function(strict) {
-    return parseFloat(strict ? this : this.replace(',', '.').replace(/(\d)-(\d)/g, '$1.$2'));
+    return parseFloat(strict === true ? this : this.replace(',', '.').replace(/(\d)-(\d)/g, '$1.$2'));
   }
 
 });
@@ -1962,7 +1963,7 @@ function Event_Klass(event, bound_element) {
     this.currentTarget = bound_element;
 
     // faking the mouse position
-    var scrolls = this.target.window().scrolls();
+    var scrolls = this.target.win().scrolls();
 
     this.pageX = event.clientX + scrolls.x;
     this.pageY = event.clientY + scrolls.y;
@@ -2007,10 +2008,13 @@ function wrap(object) {
  */
 var Document = RightJS.Document = new Class(Wrapper, {
   // returns the window reference
-  window: function() {
+  win: function() {
     return wrap(this._.defaultView || this._.parentWindow);
   }
-});
+}),
+
+// a common local wrapped document reference
+current_Document = wrap(document);
 
 
 /**
@@ -2020,11 +2024,12 @@ var Document = RightJS.Document = new Class(Wrapper, {
  */
 var Window = RightJS.Window = new Class(Wrapper, {
   /**
-   * Generic API reference
+   * Selfreference to have a common interface with the rest of the wrappers
+   * in case of events handling
    *
-   * @return Window this
+   * @return Window
    */
-  window: function() {
+  win: function() {
     return this;
   },
 
@@ -2462,7 +2467,7 @@ Element.include({
    */
   text: function(text) {
     return text === undefined ? this._.innerHTML.stripTags() :
-      this.update(this.document()._.createTextNode(text));
+      this.update(this.doc()._.createTextNode(text));
   },
 
   /**
@@ -2992,7 +2997,7 @@ Element.include({
    *
    * @return RightJS.Document
    */
-  document: function() {
+  doc: function() {
     return wrap(this._.ownerDocument);
   },
 
@@ -3001,8 +3006,8 @@ Element.include({
    *
    * @return RightJS.Window
    */
-  window: function() {
-    return this.document().window();
+  win: function() {
+    return this.doc().win();
   },
 
   /**
@@ -3023,8 +3028,8 @@ Element.include({
    */
   position: function() {
     var rect    = this._.getBoundingClientRect(),
-        html    = this.document()._.documentElement,
-        scrolls = this.window().scrolls();
+        html    = this.doc()._.documentElement,
+        scrolls = this.win().scrolls();
 
     return {
       x: rect.left + scrolls.x - html.clientLeft,
@@ -3169,7 +3174,7 @@ Element.include({
    * @return Element self
    */
   scrollThere: function(options) {
-    this.window().scrollTo(this, options);
+    this.win().scrollTo(this, options);
     return this;
   }
 });
@@ -3268,7 +3273,7 @@ Element.include({
     }, this);
 
     // manually bypassing the event to the parent one if it should bubble
-    if (parent && parent.fire && !(!event.bubbles === false || event.stopped)) {
+    if (parent && parent.fire && !(event.bubbles === false || event.stopped)) {
       parent.fire(event);
     }
 
@@ -3336,12 +3341,12 @@ Element_add_event_shortcuts(
    * @return Array of elements
    */
   find: function(css_rule, raw) {
-    var query = this._.querySelectorAll(css_rule || '*'), result = [], i=0, l = query.length;
+    var query = this._.querySelectorAll(css_rule || '*'), result, i=0, l = query.length;
 
     if (raw === true) {
       result = $A(query);
     } else {
-      for (; i < l; i++) {
+      for (result = []; i < l; i++) {
         result[i] = wrap(query[i]);
       }
     }
@@ -3847,28 +3852,28 @@ var mouse_io_index = [], mouse_io_inactive = true;
 /**
  * Fires the actual mouseenter/mouseleave event
  *
+ * @param original event
  * @param raw dom element
  * @param integer uid
  * @param boolean mouseenter or mouseleave
  * @return void
  */
-function mouse_io_fire(element, uid, enter) {
-  var event = new Event(enter ? 'mouseenter' : 'mouseleave', {
-    bubbles:       false,
-    target:        element
-  }),
-  doc_wrap = wrap(document);
+function mouse_io_fire(raw, element, uid, enter) {
+  var event = new Event(raw);
+  event.type    = enter === true ? 'mouseenter' : 'mouseleave';
+  event.bubbles = false;
+  event.target  = wrap(element);
 
   // replacing the #find method so that UJS didn't
   // get broke with trying to find nested elements
   event.find = function(css_rule) {
-    return doc_wrap.find(css_rule, true)
+    return $$(css_rule, true)
       .indexOf(this.target._) === -1 ?
         undefined : this.target;
   };
 
   event.target.fire(event);
-  doc_wrap.fire(event);
+  current_Document.fire(event);
 }
 
 /**
@@ -3883,13 +3888,14 @@ function mouse_io_handler(e) {
       from    = e.relatedTarget || e.fromElement,
       element = target,
       passed  = false,
+      parents = [],
       uid, event;
 
   while (element.nodeType === 1) {
     uid = $uid(element);
 
-    if (!mouse_io_index[uid]) {
-      mouse_io_fire(element, uid,
+    if (mouse_io_index[uid] === undefined) {
+      mouse_io_fire(e, element, uid,
         mouse_io_index[uid] = true
       );
     }
@@ -3898,15 +3904,17 @@ function mouse_io_handler(e) {
       passed = true;
     }
 
+    parents.push(element);
+
     element = element.parentNode;
   }
 
   if (from && !passed) {
-    while (from.nodeType === 1 && from !== target) {
+    while (from.nodeType === 1 && parents.indexOf(from) === -1) {
       uid = $uid(from);
-      if (mouse_io_index[uid]) {
-        mouse_io_fire(from, uid,
-          mouse_io_index[uid] = false
+      if (mouse_io_index[uid] !== undefined) {
+        mouse_io_fire(e, from, uid,
+          mouse_io_index[uid] = undefined
         );
       }
 
@@ -3920,10 +3928,10 @@ function mouse_io_handler(e) {
  *
  * @return void
  */
-function mouse_io_reset() {
+function mouse_io_reset(e) {
   mouse_io_index.each(function(value, uid) {
     if (value && Wrappers_Cache[uid]) {
-      mouse_io_fire(Wrappers_Cache[uid]._, uid, false);
+      mouse_io_fire(e, Wrappers_Cache[uid]._, uid, false);
     }
   });
 }
@@ -4175,12 +4183,12 @@ Object.each({
   observes:      'delegates'
 }, function(name, method) {
   String.prototype[name] = function() {
-    var doc = wrap(document), args = $A(arguments), result;
+    var args = $A(arguments), result;
 
     args.splice(1,0,''+this);
-    result = doc[method].apply(doc, args);
+    result = current_Document[method].apply(current_Document, args);
 
-    return result === doc ? this : result;
+    return result === current_Document ? this : result;
   };
 });
 var old_on = String.prototype.on;
@@ -4217,17 +4225,28 @@ Event_delegation_shortcuts.each(function(name) {
  *   "#css.rule".setStyle({color: 'red'});
  *
  */
-Object.each((RightJS.Input || RightJS.Element).prototype, function(name, method) {
-  if (isFunction(method) && !(name in String.prototype)) {
-    String.prototype[name] = function() {
-      var nodes = wrap(document).find(this, true), i=0, l = nodes.length, element;
-      for (; i < l; i++) {
-        element = wrap(nodes[i]);
-        element[name].apply(element, arguments);
-      }
-      return this;
-    };
-  }
+$w('Element Input Form').each(function(klass) {
+  Object.each(klass in RightJS ? RightJS[klass].prototype : {}, function(name, method) {
+    if (isFunction(method) && !(name in String.prototype)) {
+      String.prototype[name] = function() {
+        var nodes = $$(this, true), i=0, l = nodes.length, first=true, element, result;
+        for (; i < l; i++) {
+          element = wrap(nodes[i]);
+          result  = element[name].apply(element, arguments);
+
+          // checking if that's a data-retrieving call
+          if (first) {
+            if (result !== element) {
+              return result;
+            }
+            first = false;
+          }
+        }
+
+        return null; // don't return the string itself in here, it will screw with data-retrieving calls on empty collections
+      };
+    }
+  });
 });
 
 /**
@@ -4973,6 +4992,20 @@ function fx_run_next(fx) {
 }
 
 /**
+ * Cancels all currently running and scheduled effects
+ * on the element
+ *
+ * @param Element element
+ * @return void
+ */
+function fx_cancel_all(element) {
+  var uid = $uid(element._);
+
+  (running_fx[uid] || []).each('cancel');
+  (scheduled_fx[uid] || []).splice(0);
+}
+
+/**
  * Initializes the fx rendering timer
  *
  * @param Fx fx
@@ -5090,7 +5123,7 @@ Element.include({
    * @return Element this
    */
   stop: function() {
-    (running_fx[$uid(this._)] || []).each('cancel');
+    fx_cancel_all(this);
     return this;
   },
 
@@ -5850,8 +5883,13 @@ return RightJS;
  * Copyright (C) 2009-2011 Nikolay V. Nemshilov
  */
 if (RightJS.Browser.OLD) {
-  document.write('<script src="' +
-    RightJS.$A(document.getElementsByTagName('script')).last()
-      .src.replace(/(^|\/)(right)([^\/]+)$/, '$1$2-olds$3') +
-  '"></script>');
+  (function(d) {
+    var script  = d.createElement('script'),
+        scripts = d.getElementsByTagName('script'),
+        rjs_spt = scripts[scripts.length - 1];
+
+    script.src = rjs_spt.src.replace(/(^|\/)(right)([^\/]+)$/, '$1$2-olds$3');
+
+    rjs_spt.parentNode.appendChild(script);
+  })(document);
 }

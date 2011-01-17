@@ -7,7 +7,8 @@ gem 'rails', '3.0.3'
 
 gem 'sqlite3-ruby', :require => 'sqlite3'
 gem 'paperclip'
-
+gem 'rack-test', '0.5.6'
+# gem 'right-rails'
 # Use unicorn as the web server
 # gem 'unicorn'
 
