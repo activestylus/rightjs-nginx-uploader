@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RightJS Nginx Uploader Test</title>
+    <%= stylesheet_link_tag 'screen' %>
+    <%= javascript_include_tag 'right', 'right/uploader' %>
+    <%= csrf_meta_tag %>
+    <%= yield :js %>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+/**
+ * Tables specific dom-wrapper
+ *
+ * Copyright (C) 2010 Nikolay Nemshilov
+ */
+var Table=RightJS.Table=function(e){var m=e.$,h=e.$E,n=e.isHash,o=e.isElement,p=e.Object,i=e.Element,k=i.Wrappers.TABLE=new e.Class(i,{extend:{Options:{ascMarker:"&#x25BC;",descMarker:"&#x25B2;",algorithm:"text",order:"asc",sortedClass:"sorted"}},initialize:function(a){var d=a=a||{};if(n(a)&&!o(a))d="table";this.$super(d,a);this.options=p.merge(k.Options,eval("("+this.get("data-table")+")"))},sort:function(a,d,f){var g=a instanceof i?a:this.header().last().children("th")[a];if(!g)return this;a=g.parent().children("th").indexOf(g);
+d=d||(this.marker&&this.marker.parent()===g?this.marker.asc?"desc":"asc":null);f=f||(g.hasClass("numeric")?"numeric":null);d=d||this.options.order;f=f||this.options.algorithm;sortedClass=this.options.sortedClass;var j=this.rows().map(function(b){var c=b.children("td")[a];c=c?c.text():"";if(f==="numeric")c=e(c).toFloat();return{row:b,text:c}}),l=j[0]?h("tr").insertTo(j[0].row,"before"):h("tr").insertTo(this.first("tbody")||this);if(typeof f!=="function")f=d==="asc"?function(b,c){return b.text>c.text?
+1:b.text<c.text?-1:0}:function(b,c){return b.text>c.text?-1:b.text<c.text?1:0};j.sort(f).reverse().each(function(b){l.insert(b.row,"after")});l.remove();this.marker=(this.marker||g.first("span.sort-marker")||h("span",{"class":"sort-marker"})).update(this.options[d==="asc"?"ascMarker":"descMarker"]).insertTo(g,"bottom");this.marker.asc=d==="asc";this.find("th").each(function(b){b.removeClass(sortedClass)});this.marker.parent().toggleClass(sortedClass);return this},rows:function(){return this.find("tr").reject(function(a){return a.first("th")||
+a.parent("tfoot")})},header:function(){return this.find("tr").filter("first","th")},footer:function(){return this.find("tfoot > tr")}});m(document).onClick(function(a){(a=a.find("th.sortable"))&&a.parent("table").sort(a)});return k}(RightJS);
