@@ -46,10 +46,10 @@ class UploadsController < ApplicationController
         if @upload.save
           flash[:notice] = 'upload was successfully created.'
           format.html { redirect_to(@upload) }
-          #format.js   { render rjs.insert_and_care(@upload) }
+          format.js   { render rjs.insert_and_care(@upload) }
         else
           format.html { render :action => "new" }
-          #format.js   { render rjs.replace_form_for(@upload) }
+          format.js   { render rjs.replace_form_for(@upload) }
         end
       end
     end
