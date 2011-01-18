@@ -278,20 +278,9 @@ Form.include({
     return old_send.apply(this, arguments);
   }
 });
-(function() {
-        var style = document.createElement('style'),
-            rules = document.createTextNode("div.rui-progress-bar,div.rui-progress-bar *{margin:0;padding:0;border:none;background:none}div.rui-progress-bar{position:relative;height:1.4em;line-height:1.4em;width:20em;border:1px solid #999}div.rui-progress-bar,div.rui-progress-bar div.bar{border-radius:0.25em;-moz-border-radius:0.25em;-webkit-border-radius:0.25em}div.rui-progress-bar div.bar{position:absolute;left:0;top:0;width:0%;height:100%;background:#CCC;z-index:1}div.rui-progress-bar div.num{position:absolute;width:100%;height:100%;z-index:2;text-align:center}div.rui-progress-bar-failed{border-color:red;color:red;background:pink}.rui-uploader{display:none}");
 
-        style.type = 'text/css';
 
-        if(style.styleSheet) {
-          style.styleSheet.cssText = rules.nodeValue;
-        } else {
-          style.appendChild(rules);
-        }
-
-        document.getElementsByTagName('head')[0].appendChild(style);
-      })();
+document.write("<style type=\"text/css\">div.rui-progress-bar,div.rui-progress-bar *{margin:0;padding:0;border:none;background:none}div.rui-progress-bar{position:relative;height:1.4em;line-height:1.4em;width:20em;border:1px solid #999}div.rui-progress-bar,div.rui-progress-bar div.bar{border-radius:0.25em;-moz-border-radius:0.25em;-webkit-border-radius:0.25em}div.rui-progress-bar div.bar{position:absolute;left:0;top:0;width:0%;height:100%;background:#CCC;z-index:1}div.rui-progress-bar div.num{position:absolute;width:100%;height:100%;z-index:2;text-align:center}div.rui-progress-bar-failed{border-color:red;color:red;background:pink}.rui-uploader{display:none}</style>");
 
 return Uploader;
 })(RightJS);

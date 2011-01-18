@@ -409,20 +409,9 @@ $(window).onBlur(function() {
     Sortable.current.finishDrag();
   }
 });
-(function() {
-        var style = document.createElement('style'),
-            rules = document.createTextNode(".rui-sortable{user-select:none;-moz-user-select:none;-webkit-user-select:none}");
 
-        style.type = 'text/css';
 
-        if(style.styleSheet) {
-          style.styleSheet.cssText = rules.nodeValue;
-        } else {
-          style.appendChild(rules);
-        }
-
-        document.getElementsByTagName('head')[0].appendChild(style);
-      })();
+document.write("<style type=\"text/css\">.rui-sortable{user-select:none;-moz-user-select:none;-webkit-user-select:none}</style>");
 
 return Sortable;
 })(document, RightJS);

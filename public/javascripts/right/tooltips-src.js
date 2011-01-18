@@ -142,9 +142,9 @@ var Tooltip = new Widget({
 
     // tries to find a tip closest to the event
     find: function(event) {
-      var element = event.target;
+      var element = event.find(Tooltip.Options.cssRule);
 
-      if (element.match(Tooltip.Options.cssRule)) {
+      if (element) {
         var uid = $uid(element);
         return (Tooltip.instances[uid] || (Tooltip.instances[uid] = new Tooltip(element)));
       }
@@ -193,7 +193,6 @@ var Tooltip = new Widget({
 
     this._timer = R(function() {
       Element.prototype.hide.call(this, this.options.fxName, {
-        engine:   'javascript', // Webkit too slow in here
         duration: this.options.fxDuration,
         onFinish: R(function() {
           if (Tooltip.current === this) {
@@ -222,10 +221,7 @@ var Tooltip = new Widget({
     // show the tooltip with a delay
     this._timer = R(function() {
       Element.prototype.show.call(this.stop(),
-        this.options.fxName, {
-          engine: 'javascript', // webkit it too slow on that
-          duration: this.options.fxDuration
-        }
+        this.options.fxName, {duration: this.options.fxDuration}
       );
 
       Tooltip.current = this.fire('show');
@@ -271,7 +267,7 @@ var Tooltip = new Widget({
 /**
  * The post load tooltips initialization script
  *
- * Copyright (C) 2009-2011 Nikolay Nemshilov
+ * Copyright (C) 2009-2010 Nikolay Nemshilov
  */
 $(document).on({
   /**
@@ -280,10 +276,13 @@ $(document).on({
    *
    * @param Event event
    */
-  mouseenter: function(event) {
-    var tip = Tooltip.find(event);
-    if (tip) {
-      tip.show().moveToEvent(event);
+  mouseover: function(event) {
+    var prev_tip = Tooltip.current, this_tip = Tooltip.find(event);
+    if (this_tip) {
+      if (prev_tip && prev_tip !== this_tip) { prev_tip.hide(); }
+      if (this_tip.hidden()) { this_tip.show(); }
+
+      this_tip.moveToEvent(event);
     }
   },
 
@@ -292,11 +291,11 @@ $(document).on({
    *
    * @param Event event
    */
-  mouseleave: function(event) {
-    var tip = Tooltip.find(event);
+  mouseout: function(event) {
+    var curr_tip = Tooltip.current, this_tip = Tooltip.find(event);
 
-    if (tip) {
-      tip.hide();
+    if (curr_tip && (!this_tip || this_tip === curr_tip)) {
+      curr_tip.hide();
     }
   },
 
@@ -307,25 +306,14 @@ $(document).on({
    */
   mousemove: function(event) {
     var tip = Tooltip.current;
-    if (tip !== null && tip.options.move) {
+    if (tip && tip.options.move) {
       tip.moveToEvent(event);
     }
   }
 });
-(function() {
-        var style = document.createElement('style'),
-            rules = document.createTextNode("div.rui-tooltip{display:none;position:absolute;z-index:99999;font-size:90%;margin-top:16pt;margin-left:5pt;color:#FFF;text-shadow:0 0 .2em #000;border:.3em solid rgba(255,255,255,0.2);background-color:rgba(25,25,25,0.92);background-color:#000 \\9; border:.3em solid #444 \\9; background-image:-webkit-gradient(linear,0% 0%,0% 100%,from(transparent) ,to(#000) );border-radius:.4em;-moz-border-radius:.4em;-webkit-border-radius:.4em;box-shadow:0 0 .4em #555;-moz-box-shadow:0 0 .4em #555;-webkit-box-shadow:0 0 .4em #555}div.rui-tooltip-container{margin:.4em .6em}");
 
-        style.type = 'text/css';
 
-        if(style.styleSheet) {
-          style.styleSheet.cssText = rules.nodeValue;
-        } else {
-          style.appendChild(rules);
-        }
-
-        document.getElementsByTagName('head')[0].appendChild(style);
-      })();
+document.write("<style type=\"text/css\">div.rui-tooltip{display:none;position:absolute;z-index:99999;font-size:90%;margin-top:16pt;margin-left:5pt;color:#FFF;text-shadow:0 0 .2em #000;border:.3em solid rgba(255,255,255,0.2);background-color:rgba(25,25,25,0.92);background-color:#000 \\9; border:.3em solid #444 \\9; background-image:-webkit-gradient(linear,0% 0%,0% 100%,from(transparent) ,to(#000) );border-radius:.4em;-moz-border-radius:.4em;-webkit-border-radius:.4em;box-shadow:0 0 .4em #555;-moz-box-shadow:0 0 .4em #555;-webkit-box-shadow:0 0 .4em #555}div.rui-tooltip-container{margin:.4em .6em}</style>");
 
 return Tooltip;
 })(document, RightJS);
